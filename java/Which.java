@@ -17,25 +17,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.StringTokenizer;
+import java.util.List;
+
+import com.accumulatorx.os.Environment;
+import com.accumulatorx.os.EnvironmentFactory;
 
 public class Which {
     
     public static final int EXIT_SUCCESS = 0;
     public static final int EXIT_FAILURE = 1;
     
-    public HashMap<String,String> env = new HashMap<String,String>();
+    public Environment env = null;
     
-    private String[] path = null;
-    private String[] pathExt = null;
+    private List<String> path = null;
+    private List<String> pathExt = null;
     private boolean findAllRequested = false;
     private boolean verbose = false;
     private boolean substringSearchRequested = false;
@@ -48,131 +46,20 @@ public class Which {
     public Which() throws IOException {
         // Build the env object, containing all environment variables and 
         // their values.
-        try {
-            ArrayList<String> output = captureCommandOutput(buildPrintEnvCommand());
-            for (String line : output) {
-                String[] parts = line.split("=", 2);
-                env.put(parts[0], parts[1]);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-        pathExt = getMultiValuedEnvVar("PATHEXT");
-        path = getMultiValuedEnvVar("PATH");
+        env = new EnvironmentFactory().getEnvironment();
+        pathExt = env.getMultiValue("PATHEXT");
+        path = env.getMultiValue("PATH");
         if (path == null) {
             System.err.println("PATH environment variable is not set.");
             System.exit(EXIT_FAILURE);
         }
 
-        if (isRunningOnWindows()) {
+        if (env.isWindows()) {
             // Add the assumed current directory to the path.
             path = push(path, System.getProperty("user.dir"));
         }
     }
 
-    public boolean isRunningOnWindows() {
-        return System.getProperty("os.name").startsWith("Windows");
-    }
-    
-    public String[] split(String splittor, String s) {
-        if (s == null) {
-            return null;
-        }
-        ArrayList<String> parts = new ArrayList<String>();
-        StringTokenizer tokenizer = new StringTokenizer(s, splittor);
-        while (tokenizer.hasMoreTokens()) {
-            parts.add(tokenizer.nextToken());
-        }
-        return parts.toArray(new String[parts.size()]);
-    }
-
-    public ArrayList<String> captureCommandOutput(String command) throws IOException {
-        ArrayList<String> output = new ArrayList<String>();
-        Runtime rt = Runtime.getRuntime();
-        Process proc = rt.exec(command);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-        try {
-            output.add(reader.readLine());
-            proc.waitFor();
-        }
-        catch (InterruptedException ie) {
-            ie.printStackTrace();
-        }
-        finally {
-            close(reader);
-        }
-        return output;
-    }
-    
-    public void close(Reader reader) {
-        if (reader != null) {
-            try {
-                reader.close();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public String buildGetEnvCommand(String varName) {
-        String getenvCommand = "/bin/sh -c echo $" + varName;
-        if (isRunningOnWindows()) {
-            // Must first check if the variable is defined on Windows
-            // because it will print the variable name if it is not
-            // defined. We don't want that.
-            getenvCommand = "cmd /c if defined " + varName + " echo %" + varName + "%";
-        }
-        return getenvCommand;
-    }
-    
-    public String buildPrintEnvCommand() {
-        String printenvCommand = "/usr/bin/printenv";
-        if (isRunningOnWindows()) {
-            printenvCommand = "cmd /c set";
-        }
-        return printenvCommand;
-    }
-    
-    public String getenv(String name) throws IOException {
-        String value = null;
-        BigDecimal javaSpecVersion = new BigDecimal(System.getProperty("java.specification.version"));
-        
-        if (javaSpecVersion.compareTo(new BigDecimal(1.0)) > 0 && javaSpecVersion.compareTo(new BigDecimal(1.5)) < 0) {
-            // These versions don't have a built-in getenv function so 
-            // use this custom JNI version.
-            try {
-                // With a native executable compiled with gcj this
-                // method will already be compiled in. Otherwise
-                // it the dll needs to be loaded.
-                value = PlainPosix.getenv(name);
-            }
-            catch (UnsatisfiedLinkError ule) {
-                try {
-                    System.loadLibrary("getenv");
-                    value = PlainPosix.getenv(name);
-                }
-                catch (Exception exc) {
-                    // If we can't load the JNI library, call the shell.
-                    ArrayList<String> output = captureCommandOutput(buildGetEnvCommand(name));
-                    if (output.size() > 0) {
-                        value = output.get(0);
-                    }
-                }
-            }
-        }
-        else {
-            value = System.getenv(name);
-        }
-        return value;
-    }
-    
-    public String[] getMultiValuedEnvVar(String name) throws IOException {
-        return split(System.getProperty("path.separator"), getenv(name));
-    }
-    
     /**
      * Implements the Perl/JavaScript push function.
      * 
