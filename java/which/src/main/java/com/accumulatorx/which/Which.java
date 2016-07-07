@@ -1,3 +1,4 @@
+package com.accumulatorx.which;
 /*
  * which - Find a command in the PATH in Windows
  * Copyright (c) 2002, 2015 Bill Chatfield
@@ -20,46 +21,61 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import com.accumulatorx.os.Environment;
-import com.accumulatorx.os.EnvironmentFactory;
+import com.accumulatorx.os.EnvironmentVariableNotFoundException;
+
 
 public class Which {
     
     public static final int EXIT_SUCCESS = 0;
     public static final int EXIT_FAILURE = 1;
     
-    public Environment env = null;
+    public static final String PATH_SEPARATOR = System.getProperty("path.separator");
     
-    private List<String> path = null;
-    private List<String> pathExt = null;
+    private String[] paths = null;
+    private String[] pathExts = null;
     private boolean findAllRequested = false;
     private boolean verbose = false;
     private boolean substringSearchRequested = false;
     
     public static void main(String[] args) throws IOException {
-        Which which = new Which();
-        which.run(args);
+        Which which;
+		try {
+			which = new Which();
+			which.run(args);
+		} 
+		catch (EnvironmentVariableNotFoundException e) {
+			e.printStackTrace();
+		}
     }
     
-    public Which() throws IOException {
-        // Build the env object, containing all environment variables and 
-        // their values.
-        env = new EnvironmentFactory().getEnvironment();
-        pathExt = env.getMultiValue("PATHEXT");
-        path = env.getMultiValue("PATH");
+    public Which() throws IOException, EnvironmentVariableNotFoundException {
+        String pathExt = System.getenv("PATHEXT");
+        if (pathExt == null) {
+            pathExts = new String[0];
+        }
+        else {
+        	pathExts = pathExt.split(PATH_SEPARATOR);
+        }
+        
+        String path = System.getenv("PATH");
         if (path == null) {
-            System.err.println("PATH environment variable is not set.");
-            System.exit(EXIT_FAILURE);
+            throw new EnvironmentVariableNotFoundException("PATH");
+        }
+        else {
+        	paths = path.split(PATH_SEPARATOR);
         }
 
-        if (env.isWindows()) {
+        if (isRunningOnWindows()) {
             // Add the assumed current directory to the path.
-            path = push(path, System.getProperty("user.dir"));
+            paths = push(paths, System.getProperty("user.dir"));
         }
     }
 
+    public boolean isRunningOnWindows() {
+        return System.getProperty("os.name").startsWith("Windows");
+    }
+    
     /**
      * Implements the Perl/JavaScript push function.
      * 
@@ -142,7 +158,7 @@ public class Which {
     public ArrayList<File> find(String cmd) throws IOException {
         ArrayList<File> matches = new ArrayList<File>();
         String lowerCmd = cmd.toLowerCase();
-        for (String dirName : path) {
+        for (String dirName : paths) {
             if (!findAllRequested && matches.size() > 0) {
                 break;
             }
@@ -159,12 +175,20 @@ public class Which {
                 }
             }
             else {
-                for (String ext : pathExt) {
-                    File file = new File(dir, cmd + ext);
-                    if (file.isFile()) {
-                        matches.add(file);
-                        if (! findAllRequested) {
-                            break;
+                if (pathExts == null) {
+                	File file = new File(dir, cmd);
+                	if (file.exists()) {
+                		matches.add(file);
+                	}
+                }
+                else {
+                    for (String ext : pathExts) {
+                        File file = new File(dir, cmd + ext);
+                        if (file.isFile()) {
+                            matches.add(file);
+                            if (! findAllRequested) {
+                                break;
+                            }
                         }
                     }
                 }
