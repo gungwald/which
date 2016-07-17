@@ -87,12 +87,12 @@ public class ShellEnvironment extends HashMap<String,String> implements Environm
                 // With a native executable compiled with gcj this
                 // method will already be compiled in. Otherwise
                 // it the dll needs to be loaded.
-                value = PlainPosix.getenv(name);
+                value = Posix.getenv(name);
             }
             catch (UnsatisfiedLinkError ule) {
                 try {
                     System.loadLibrary("getenv");
-                    value = PlainPosix.getenv(name);
+                    value = Posix.getenv(name);
                 }
                 catch (Exception exc) {
                     // If we can't load the JNI library, call the shell.

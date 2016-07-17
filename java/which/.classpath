@@ -3,4 +3,15 @@
 	<classpathentry kind="output" path="build/classes/main"/>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
+	<classpathentry sourcepath="/Users/bill/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.2.2/948a9338b46e83bc029a0c500f1de0fc6eea8900/jna-4.2.2-sources.jar" kind="lib" path="/Users/bill/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.2.2/5012450aee579c3118ff09461d5ce210e0cdc2a9/jna-4.2.2.jar" exported="true">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/Users/bill/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.2.2/8cf693f684e2fbe132808bd67c476f47ce31a33e/jna-4.2.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/bill/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.2.2/19ccc6c91d76b7a35d2a37c84b61ef58eab97c37/jna-platform-4.2.2-sources.jar" kind="lib" path="/Users/bill/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.2.2/30fa67b23cf2c0327a02cfaecbef76a20160e7b/jna-platform-4.2.2.jar" exported="true">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/Users/bill/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.2.2/f68e656ab4fd5c464ef06d0ee24b1d5b1399b34/jna-platform-4.2.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/bill/.gradle/caches/modules-2/files-2.1/org.jruby.ext.posix/jna-posix/1.0.3/5b26b9b656dc49f7b6b3167114252572a74f072f/jna-posix-1.0.3-sources.jar" kind="lib" path="/Users/bill/.gradle/caches/modules-2/files-2.1/org.jruby.ext.posix/jna-posix/1.0.3/f480f20e540f1fa1e8ffcc5a1907b625b8da621c/jna-posix-1.0.3.jar" exported="true"/>
 </classpath>
