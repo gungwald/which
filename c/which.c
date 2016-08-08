@@ -1,5 +1,16 @@
 /* Wide characters are used exclusively because Windows uses them internally
-   so they are faster than chars because there is no translation. */
+   so they are faster than chars because there is no translation.
+
+   C++ is intentionally being avoided so as to avoid a dependency on the C++
+   standard library, MSVCPXX.DLL (Microsoft) or libstdc++.dll (MinGW). These
+   would either have to be distributed with the exe or would have to already
+   exist on all target machines. And if it were assumed to exist on the target
+   machines, then there is the problem of having the right version. This is
+   just another potential point of failure.
+
+   The C++ standard library could be statically linked, but this would cause
+   the exe to be gigantic, which is also undesirable and unnecessary.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
