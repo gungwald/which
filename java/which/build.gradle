@@ -3,6 +3,7 @@ apply plugin: 'eclipse'
 
 sourceCompatibility = 1.5
 version = '1.0'
+
 jar {
     manifest {
         attributes 'Implementation-Title': 'which',
@@ -14,9 +15,19 @@ jar {
 eclipse {
     classpath {
         defaultOutputDir = file("build/classes/main")
+        downloadSources = true
+        downloadJavadoc = true
     }
 }
 
 repositories {
     mavenCentral()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/net.java.dev.jna/jna
+    compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
+    compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
+    // https://mvnrepository.com/artifact/org.jruby.ext.posix/jna-posix
+    compile group: 'org.jruby.ext.posix', name: 'jna-posix', version: '1.0.3'
 }
