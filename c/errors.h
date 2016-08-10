@@ -9,8 +9,8 @@
 #define ERRORS_H_
 
 
-wchar_t *errortext(unsigned long errorcode);
-void printerror(const wchar_t *offendingobject, unsigned long errorcode);
+wchar_t *getMessage(unsigned long errorCode);
+void printError(const wchar_t *offendingObject, unsigned long errorCode);
 
 
 #endif /* ERRORS_H_ */
