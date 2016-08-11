@@ -5,6 +5,7 @@
  *      Author: Bill.Chatfield
  */
 
+#include <stdarg.h>	/* va_arg, va_start */
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,6 +57,32 @@ wchar_t *concat2(const wchar_t *s, const wchar_t *t)
     return result;
 }
 
+wchar_t *concatv(const wchar_t *first, ...)
+{
+	va_list *argPtr;
+	wchar_t *s;
+	size_t totalLength;
+	wchar_t *result;
+
+	/* Calculate total length of result string. */
+	totalLength = strlen(first);
+	va_start(argPtr, first);
+	while ((s = va_arg(argPtr, wchar_t*)) != NULL) {
+		totalLength += strlen(s);
+	}
+	va_end(argPtr);
+
+	result = (wchar_t *)malloc((totalLength + 1) * sizeof(wchar_t));
+	if (result != NULL) {
+		va_start(argPtr, first);
+		wcscpy(result, first);
+		while ((s = va_arg(argPtr, wchar_t*)) != NULL) {
+			wcscat(result, s);
+		}
+		va_end(argPtr);
+	}
+	return result;
+}
 /**
  * Concatenates s & t, just like the plus operator in Java. The return
  * value is malloc'd so the caller must free it.
