@@ -162,14 +162,14 @@ bool whichext(const wchar_t *searchfile, const wchar_t *ext, const wchar_t *path
         }
         else
         {
-            printerror(filefoundinpath, GetLastError());
+            printError(filefoundinpath, GetLastError());
         }
     }
     else 
     {
         if ((errorcode = GetLastError()) != ERROR_FILE_NOT_FOUND)
         {
-            printerror(searchfile, errorcode);
+            printError(searchfile, errorcode);
         }
     }
     return foundfile;

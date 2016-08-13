@@ -5,6 +5,7 @@
  *      Author: Bill.Chatfield
  */
 
+#include <stdio.h>
 #include <stdarg.h>	/* va_arg, va_start */
 #include <stdint.h>
 #include <stdlib.h>
@@ -59,16 +60,16 @@ wchar_t *concat2(const wchar_t *s, const wchar_t *t)
 
 wchar_t *concatv(const wchar_t *first, ...)
 {
-	va_list *argPtr;
+	va_list argPtr;
 	wchar_t *s;
 	size_t totalLength;
 	wchar_t *result;
 
 	/* Calculate total length of result string. */
-	totalLength = strlen(first);
+	totalLength = wcslen(first);
 	va_start(argPtr, first);
 	while ((s = va_arg(argPtr, wchar_t*)) != NULL) {
-		totalLength += strlen(s);
+		totalLength += wcslen(s);
 	}
 	va_end(argPtr);
 
@@ -143,7 +144,7 @@ wchar_t *concatUInt32(const wchar_t *s, uint32_t n)
 
     /* There can be no buffer overrun because a uint32_t cannot
        exceed the number of characters in the buffer. */
-    swprintf(numbertext, L"%u", n);
+    _swprintf(numbertext, L"%u", n);
     return concat(s, numbertext);
 }
 

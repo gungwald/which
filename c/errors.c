@@ -25,7 +25,7 @@ void printError(const wchar_t *offendingObject, unsigned long errorCode)
    by the caller. */
 wchar_t *getMessage(unsigned long errorCode)
 {
-    HMODULE messageMocation;
+    HMODULE messageLocation;
     wchar_t *message;
     unsigned long messageLength;
 
@@ -35,7 +35,7 @@ wchar_t *getMessage(unsigned long errorCode)
     }
     else {
         /* NULL means to look for the message in the system module. */
-        messageLocaion = NULL;
+        messageLocation = NULL;
     }
 
     /* Call FormatMessage to allow for message text to be acquired
