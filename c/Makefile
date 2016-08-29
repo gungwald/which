@@ -5,7 +5,7 @@ CC = gcc
 WINDRES = windres
 RES = 
 LINKOBJ = which.o errors.o stringconcat.o $(RES)
-CFLAGS = -std=c11 -c -g -O3 -DUNICODE -D_UNICODE $(INCS)  
+CFLAGS = -std=c11 -c -O3 -DUNICODE -D_UNICODE $(INCS)  
 
 $(BIN): $(LINKOBJ)
 	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)

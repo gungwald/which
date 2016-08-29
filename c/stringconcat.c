@@ -114,7 +114,7 @@ wchar_t *concat3(const wchar_t *s, const wchar_t *t, const wchar_t *u)
         uNotNull = L"";
     }
     else {
-    	uNotNull = t;
+    	uNotNull = u;
     }
 
     /* Variables s & t are guaranteed to be non-NULL at this point. */

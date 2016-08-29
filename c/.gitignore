@@ -1,7 +1,0 @@
-# C development
-*.swp
-*.exe
-*.o
-*.gch
-Debug/
-Release/
