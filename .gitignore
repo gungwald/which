@@ -12,7 +12,9 @@
 hs_err_pid*
 
 # C development
-.swp
-.exe
-.o
-.gch
+*.swp
+*.exe
+*.o
+*.gch
+Debug/
+Release/
