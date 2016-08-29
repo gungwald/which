@@ -17,7 +17,7 @@
  * Concatenates s & t, just like the plus operator in Java. The return
  * value is malloc'd so the caller must free it.
  */
-wchar_t *concat2(const wchar_t *s, const wchar_t *t)
+wchar_t *concat(const wchar_t *s, const wchar_t *t)
 {
     const wchar_t *sNotNull;
     const wchar_t *tNotNull;

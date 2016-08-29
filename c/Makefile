@@ -1,20 +1,24 @@
 # Project: which
 
-CPP = g++
-CC  = gcc
+BIN = which.exe
+CC = gcc
 WINDRES = windres
 RES = 
-OBJ = which.o $(RES)
-LINKOBJ = which.o $(RES)
-BIN = which.exe
-CXXFLAGS = $(CXXINCS)  
-CFLAGS = $(INCS)  
+LINKOBJ = which.o errors.o stringconcat.o $(RES)
+CFLAGS = -std=c11 -c -g -O3 -DUNICODE -D_UNICODE $(INCS)  
 
-$(BIN): $(OBJ) 
+$(BIN): $(LINKOBJ)
 	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)
 
-which.o: which.c
+which.o: which.c errors.h stringconcat.h
+	$(CC) $(CFLAGS) $<
 
-clean: clean-custom
-	del $(OBJ) $(BIN)
+errors.o: errors.c errors.h
+	$(CC) $(CFLAGS) $<
+
+stringconcat.o: stringconcat.c stringconcat.h
+	$(CC) $(CFLAGS) $<
+
+clean:
+	del $(LINKOBJ) *.gch $(BIN)
 

@@ -5,12 +5,13 @@
  *      Author: Bill.Chatfield
  */
 
-#ifndef ERRORS_H_
-#define ERRORS_H_
+#ifndef ERRORS_H
+#define ERRORS_H
+
+#include <wchar.h>
+
+wchar_t *getErrorMessage(unsigned long errorCode);
+void printErrorMessage(const wchar_t *offendingObject, unsigned long errorCode);
 
 
-wchar_t *getMessage(unsigned long errorCode);
-void printError(const wchar_t *offendingObject, unsigned long errorCode);
-
-
-#endif /* ERRORS_H_ */
+#endif /* ERRORS_H */

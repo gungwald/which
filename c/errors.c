@@ -9,13 +9,14 @@
 #include <lmerr.h>
 #include <windows.h>
 
+#include "stringconcat.h"
 #include "errors.h"
 
-void printError(const wchar_t *offendingObject, unsigned long errorCode)
+void printErrorMessage(const wchar_t *offendingObject, unsigned long errorCode)
 {
     wchar_t *message;
 
-    message = getMessage(errorCode);
+    message = getErrorMessage(errorCode);
     fwprintf(stderr, L"which: \u201C%s\u201D: %s\n", offendingObject, message);
     free(message);
 }
@@ -23,7 +24,7 @@ void printError(const wchar_t *offendingObject, unsigned long errorCode)
 /* This function was taken from Microsoft's Knowledge Base Article 149409
    and modified to fix the formatting. The returned string must be free'd
    by the caller. */
-wchar_t *getMessage(unsigned long errorCode)
+wchar_t *getErrorMessage(unsigned long errorCode)
 {
     HMODULE messageLocation;
     wchar_t *message;
