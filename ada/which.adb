@@ -7,166 +7,166 @@ with Ada.Exceptions;
 with Ada.Characters.Handling;
 with GNAT.OS_Lib;
 with Ada.Containers.Vectors;
-
 with Ada.Strings.Unbounded;
-use  Ada.Strings.Unbounded;
-
 with Ada.Strings.Unbounded.Text_IO;
-use  Ada.Strings.Unbounded.Text_IO;
 
-procedure Which is
+use  Ada.Strings.Unbounded; -- Necessary to get the & and = operators...
 
-    package vect  is new  Ada.Containers.Vectors(Element_Type => Unbounded_String, Index_Type => Natural);
-    package exc   renames Ada.Exceptions;
-    package tio   renames Ada.Text_IO;
-    package env   renames Ada.Environment_Variables;
-    package fixed renames Ada.Strings.Fixed;
-    package dirs  renames Ada.Directories;
-    package chars renames Ada.Characters.Handling;
-    package ubs   renames Ada.Strings.Unbounded;
-    package args  renames Ada.Command_Line;
-    package os    renames GNAT.OS_Lib;
+procedure which is
+
+    package ex   renames Ada.Exceptions;
+    package tio  renames Ada.Text_IO;
+    package uio  renames Ada.Strings.Unbounded.Text_IO;
+    package env  renames Ada.Environment_Variables;
+    package dir  renames Ada.Directories;
+    package char renames Ada.Characters.Handling;
+    package fstr renames Ada.Strings.Fixed;
+    package ustr renames Ada.Strings.Unbounded;
+    package args renames Ada.Command_Line;
+    package os   renames GNAT.OS_Lib;
+
+    package ustr_vect is new Ada.Containers.Vectors(element_type => ustr.Unbounded_String, index_type => Natural, "=" => ustr."=");
 
 
     find_all         : Boolean := False;
     verbose          : Boolean := False;
     substring_search : Boolean := False;
-    path_dirs        : vect.Vector;
-    exts             : vect.Vector;
-    path_sep         : Unbounded_String;
+    path_dirs        : ustr_vect.Vector;
+    exts             : ustr_vect.Vector;
+    path_sep         : ustr.Unbounded_String;
 
 
-    function Get_Env(Var_Name : String) return Unbounded_String is
-        Env_Var_Not_Found_Error : exception;
-        e : exc.Exception_Occurrence;
+    function getenv(name : in String) return ustr.Unbounded_String is
+        EnvVarNotFoundException : exception;
+        e : ex.Exception_Occurrence;
     begin
-        return to_unbounded_string(env.Value(Var_Name));
+        return ustr.to_unbounded_string(env.value(name));
     exception
         when e : others =>
-            raise Env_Var_Not_Found_Error with "Environment variable not found: " & Var_Name;
-    end Get_Env;
+            raise EnvVarNotFoundException with ex.Exception_Message(e) & ": " & name;
+    end getenv;
 
 
-    function lc(str : Unbounded_String) return Unbounded_String is
-        lowered_str : Unbounded_String;
+    function lc(s : ustr.Unbounded_String) return ustr.Unbounded_String is
+        lowered_str : ustr.Unbounded_String;
     begin
-        lowered_str := to_unbounded_string("");
-        for i in 1..length(str) loop
-            ubs.append(lowered_str, chars.to_lower(ubs.element(str, i)));
+        lowered_str := ustr.to_unbounded_string("");
+        for i in 1..ustr.length(s) loop
+            ustr.append(lowered_str, char.to_lower(ustr.element(s, i)));
         end loop;
         return lowered_str;
     end lc;
 
 
-    function ends_with(s : Unbounded_String; suffix_to_match : Unbounded_String) return Boolean is
-        ends_with : Boolean := false;
+    function endsWith(s : ustr.Unbounded_String; suffixToMatch : ustr.Unbounded_String) return Boolean is
+        endsWith : Boolean := false;
     begin
-        if lc(tail(s, length(suffix_to_match))) = lc(suffix_to_match) then
-            ends_with := true;
+        if lc(ustr.tail(s, ustr.length(suffixToMatch))) = lc(suffixToMatch) then
+            endsWith := true;
         end if;
-        return ends_with;
-    end Ends_With;
+        return endsWith;
+    end endsWith;
 
 
-    function index(search_in : Unbounded_String; search_for : Unbounded_String; start_position : Positive) return Natural is
+    function indexOf(search_in : ustr.Unbounded_String; search_for : ustr.Unbounded_String; start_position : Positive) return Natural is
     begin
-        return index(search_in, to_string(search_for), start_position);
-    end index;
+        return ustr.index(search_in, ustr.to_string(search_for), start_position);
+    end indexOf;
 
 
 
-    function Is_Executable(file : dirs.Directory_Entry_Type) return Boolean is
-        extension_matches : Boolean := false;
+    function isExecutable(file : dir.Directory_Entry_Type) return Boolean is
+        extensionMatches : Boolean := false;
 
-        procedure check_extension(ext : vect.Cursor) is
+        procedure checkExtension(ext : ustr_vect.Cursor) is
         begin
-            if Ends_With(to_unbounded_string(dirs.simple_name(file)), vect.element(ext)) then
-                extension_matches := true;
+            if endsWith(ustr.to_unbounded_string(dir.simple_name(file)), ustr_vect.element(ext)) then
+                extensionMatches := true;
             end if;
-        end check_extension;
+        end checkExtension;
             
     begin
-        if vect.is_empty(exts) then
-            return os.is_executable_file(dirs.full_name(file)); -- UNIX
-        end if;
-        vect.iterate(exts, check_extension'access);
-        return extension_matches;
-    end Is_Executable;
+        --if ustr_vect.is_empty(exts) then
+            --return os.is_executable_file(dir.full_name(file)); -- UNIX
+        --end if;
+        ustr_vect.iterate(exts, checkExtension'access);
+        return extensionMatches;
+    end isExecutable;
 
 
-    procedure split(parts:out vect.Vector; splittor:in Unbounded_String; to_split:in Unbounded_String) is
+    procedure split(parts : out ustr_vect.Vector;  splittor : in ustr.Unbounded_String;  to_split : in ustr.Unbounded_String) is
         splittor_position : Natural;
-        Start_From : Positive := Positive'First;
+        startFrom : Positive := Positive'first;
     begin
-        vect.clear(parts);
-        splittor_position := index(to_split, splittor, Start_From);
+        ustr_vect.clear(parts);
+        splittor_position := indexOf(to_split, splittor, startFrom);
         while splittor_position > 0 loop
-            vect.append(parts, unbounded_slice(to_split, Start_From, splittor_position - 1));
-            Start_From := splittor_position + length(splittor);
-            splittor_position := index(to_split, splittor, Start_From);
+            ustr_vect.append(parts, ustr.unbounded_slice(to_split, startFrom, splittor_position - 1));
+            startFrom := splittor_position + ustr.length(splittor);
+            splittor_position := indexOf(to_split, splittor, startFrom);
         end loop;
-        if Start_From <= length(to_split) then
-            vect.append(parts, unbounded_slice(to_split, Start_From, length(to_split)));
+        if startFrom <= ustr.length(to_split) then
+            ustr_vect.append(parts, ustr.unbounded_slice(to_split, startFrom, ustr.length(to_split)));
         end if;
-    end Split;
+    end split;
 
 
-    function dir_exists(d:Unbounded_String) return Boolean is
-        dir_name : String(1..length(d)) := to_string(d);
+    function isDirectory(d : ustr.Unbounded_String) return Boolean is
+        dir_name : String(1..ustr.length(d)) := ustr.to_string(d);
     begin
-        return dirs.exists(dir_name) and ( dirs.file_kind'pos(dirs.kind(dir_name)) = dirs.file_kind'pos(dirs.DIRECTORY) );
-    end dir_exists;
+        return dir.exists(dir_name) and ( dir.file_kind'pos(dir.kind(dir_name)) = dir.file_kind'pos(dir.DIRECTORY) );
+    end isDirectory;
 
 
-    procedure Which(search_term : String) is
+    procedure which(searchTerm : String) is
         
-        procedure search_dir(dir:vect.Cursor) is
+        procedure searchInDirectory(directoriesCursor : ustr_vect.Cursor) is
 
-            procedure Check_File(dir_entry:dirs.Directory_Entry_Type) is
+            procedure checkFile(dirEntry : dir.Directory_Entry_Type) is
                 matches : Boolean := false;
-                substr_position : Natural;
+                searchTermPosition : Natural;
             begin
-                if Substring_Search then
-                    substr_position := fixed.index(dirs.simple_name(dir_entry), search_term, 1);
-                    if substr_position > 0 and is_executable(dir_entry) then
-                        tio.put_line(dirs.Full_Name(dir_entry));
+                if substring_search then
+                    searchTermPosition := fstr.index(dir.simple_name(dirEntry), searchTerm, 1);
+                    if searchTermPosition > 0 and isExecutable(dirEntry) then
+                        tio.put_line(dir.full_name(dirEntry));
                     end if;
-                elsif search_term = dirs.simple_name(dir_entry) and is_executable(dir_entry) then
-                    tio.Put_Line(dirs.Full_Name(dir_entry));
+                elsif searchTerm = dir.simple_name(dirEntry) and isExecutable(dirEntry) then
+                    tio.put_line(dir.full_name(dirEntry));
                 end if;
-            end Check_File;
+            end checkFile;
         
         begin
-            if Verbose then
-                put_line("Checking dir: " & vect.element(dir));
+            if verbose then
+                uio.put_line("Checking dir: " & ustr_vect.element(directoriesCursor));
             end if;
 
-            if dir_exists(vect.element(dir)) then
-                dirs.search(to_string(vect.element(dir)), "", (others => True), Check_File'Access);
+            if isDirectory(ustr_vect.element(directoriesCursor)) then
+                dir.search(to_string(ustr_vect.element(directoriesCursor)), "", (others => true), checkFile'access);
             else
-                if Verbose then
-                    Put_Line("Directory not found: " & vect.element(dir));
+                if verbose then
+                    uio.put_line("Directory not found: " & ustr_vect.element(directoriesCursor));
                 end if;
             end if;
-        end search_dir;
+        end searchInDirectory;
 
     begin
-        vect.iterate(path_dirs, search_dir'access);
-    end Which;
+        ustr_vect.iterate(path_dirs, searchInDirectory'access);
+    end which;
 
 --
 -- Main Program
 --
-    e : exc.Exception_Occurrence;
+    e : ex.Exception_Occurrence;
 begin
     if env.exists("PATHEXT") then
         path_sep := to_unbounded_string(";");
-        split(exts, path_sep, get_env("PATHEXT"));
+        split(exts, path_sep, getenv("PATHEXT"));
     else
         path_sep := to_unbounded_string(":");
     end if;
 
-    split(path_dirs, path_sep, get_env("PATH"));
+    split(path_dirs, path_sep, getenv("PATH"));
 
     -- If there are some command line arguments
     if args.Argument_Count > 0 then
@@ -187,6 +187,6 @@ begin
 
 exception
     when e : others =>
-        tio.put_line(tio.Standard_Error, "Exception: " & exc.Exception_Message(e));
-end Which;
+        tio.put_line(tio.Standard_Error, "Exception: " & ex.Exception_Message(e));
+end which;
 
