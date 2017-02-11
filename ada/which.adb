@@ -36,15 +36,15 @@ procedure which is
     path_sep         : Unb_Str.Unbounded_String;
 
 
-    function getenv(Environment_Variable_name: in String) return Unb_Str.Unbounded_String is
+    function Get_Environment_Variable(name: in String) return Unb_Str.Unbounded_String is
         Environment_Variable_Not_Found : exception;
         e : Ex.Exception_Occurrence;
     begin
-        return Unb_Str.To_Unbounded_String(Env.Value(Environment_Variable_Name));
+        return Unb_Str.To_Unbounded_String(Env.Value(name));
     exception
         when e : others =>
-            raise Environment_Variable_Not_Found with Ex.Exception_Message(e) & ": " & Environment_Variable_Name;
-    end getenv;
+            raise Environment_Variable_Not_Found with Ex.Exception_Message(e) & ": " & name;
+    end Get_Eironment_Variable;
 
 
     function To_Lower_Case(s : Unb_Str.Unbounded_String) return Unb_Str.Unbounded_String is
@@ -80,7 +80,7 @@ procedure which is
 
 
 
-    function isExecutable(File : Dir.Directory_Entry_Type) return Boolean is
+    function Is_Executable(File : Dir.Directory_Entry_Type) return Boolean is
 	-- Uses global variable: Exts
         Extension_Matches : Boolean := False;
 	Is_Executable : Boolean;
@@ -102,7 +102,7 @@ procedure which is
 	    Is_Executable := Extension_Matches;
         end if;
         return Is_Executable;
-    end isExecutable;
+    end Is_Executable;
 
 
     procedure split(parts : out Unb_Str_Vect.Vector;  splittor : in Unb_Str.Unbounded_String;  to_split : in Unb_Str.Unbounded_String) is
@@ -133,19 +133,19 @@ procedure which is
         
         procedure searchInDirectory(directoriesCursor : Unb_Str_Vect.Cursor) is
 
-            procedure checkFile(dirEntry : dir.Directory_Entry_Type) is
+            procedure Check_File(Dir_Entry : dir.Directory_Entry_Type) is
                 matches : Boolean := false;
                 searchTermPosition : Natural;
             begin
                 if substring_search then
-                    searchTermPosition := fstr.index(dir.simple_name(dirEntry), searchTerm, 1);
-                    if searchTermPosition > 0 and isExecutable(dirEntry) then
-                        tio.put_line(dir.full_name(dirEntry));
+                    searchTermPosition := fstr.index(dir.simple_name(Dir_Entry), searchTerm, 1);
+                    if searchTermPosition > 0 and Is_Executable(Dir_Entry) then
+                        tio.put_line(dir.full_name(Dir_Entry));
                     end if;
-                elsif searchTerm = dir.simple_name(dirEntry) and isExecutable(dirEntry) then
-                    tio.put_line(dir.full_name(dirEntry));
+                elsif searchTerm = dir.simple_name(Dir_Entry) and Is_Executable(Dir_Entry) then
+                    tio.put_line(dir.full_name(Dir_Entry));
                 end if;
-            end checkFile;
+            end Check_File;
         
         begin
             if verbose then
@@ -153,7 +153,7 @@ procedure which is
             end if;
 
             if isDirectory(Unb_Str_Vect.element(directoriesCursor)) then
-                dir.search(to_string(Unb_Str_Vect.element(directoriesCursor)), "", (others => true), checkFile'access);
+                dir.search(to_string(Unb_Str_Vect.element(directoriesCursor)), "", (others => true), Check_File'access);
             else
                 if verbose then
                     uio.put_line("Directory not found: " & Unb_Str_Vect.element(directoriesCursor));
@@ -170,14 +170,14 @@ procedure which is
 --
     e : ex.Exception_Occurrence;
 begin
-    if env.exists("PATHEXT") then
+    if env.Exists("PATHEXT") then
         path_sep := to_unbounded_string(";");
-        split(exts, path_sep, getenv("PATHEXT"));
+        split(exts, path_sep, Get_Environment_Variable("PATHEXT"));
     else
         path_sep := to_unbounded_string(":");
     end if;
 
-    split(path_dirs, path_sep, getenv("PATH"));
+    split(path_dirs, path_sep, Get_Environment_Variable("PATH"));
 
     -- If there are some command line arguments
     if args.Argument_Count > 0 then
