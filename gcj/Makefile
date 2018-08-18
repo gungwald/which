@@ -12,10 +12,10 @@
 # JAVA_HOME must be set correctly so that the JNI include files can be found
 #
 
-CC=gcc
+CC=gcc-3.4.6
 
-JAVAC=gcj
-JAVAH=gcjh
+JAVAC=gcj-3.4.6
+JAVAH=gcjh-3.4.6
 JAR=gjar
 
 INSTALL_PREFIX=$(USERPROFILE)\Documents
