@@ -15,18 +15,16 @@ use Ada.Exceptions;
 
 procedure which is
 
-    package tio  renames Ada.Text_IO;
-    package uio  renames Ada.Strings.Unbounded.Text_IO;
-    package env  renames Ada.Environment_Variables;
-    package dirs renames Ada.Directories;
-    package char renames Ada.Characters.Handling;
-    package fstr renames Ada.Strings.Fixed;
-    package args renames Ada.Command_Line;
-    package os   renames GNAT.OS_Lib;
-
-    package ustr renames Ada.Strings.Unbounded;
+    package tio   renames Ada.Text_IO;
+    package uio   renames Ada.Strings.Unbounded.Text_IO;
+    package env   renames Ada.Environment_Variables;
+    package dirs  renames Ada.Directories;
+    package chars renames Ada.Characters.Handling;
+    package fstr  renames Ada.Strings.Fixed;
+    package args  renames Ada.Command_Line;
+    package os    renames GNAT.OS_Lib;
+    package ustr  renames Ada.Strings.Unbounded;
     package ustr_vect is new Ada.Containers.Vectors(element_type => ustr.Unbounded_String, index_type => Natural, "=" => ustr."=");
-
 
     find_all         : Boolean := False;
     verbose          : Boolean := False;
@@ -35,27 +33,26 @@ procedure which is
     exts             : ustr_vect.Vector;
     path_sep         : ustr.Unbounded_String;
 
-
-    function Get_Environment_Variable(name: in String) return Unbounded_String is
-        Environment_Variable_Not_Found : exception;
+    function getenv(name: in String) return Unbounded_String is
+        envVarNotFound : exception;
         e : Exception_Occurrence;
     begin
-        return To_Unbounded_String(Env.Value(name));
+        return to_Unbounded_String(env.value(name));
     exception
         when e : others =>
-            raise Environment_Variable_Not_Found with Exception_Message(e) & ": " & name;
-    end Get_Eironment_Variable;
+            raise envVarNotFound with exception_Message(e) & ": " & name;
+    end getenv;
 
 
-    function To_Lower_Case(s : Unbounded_String) return Unbounded_String is
-        lowered_str : Unbounded_String;
+    function toLowerCase(s : Unbounded_String) return Unbounded_String is
+        lowered : Unbounded_String;
     begin
-        lowered_str := to_unbounded_string("");
+        lowered := to_Unbounded_String("");
         for i in 1..length(s) loop
-            append(lowered_str, char.to_lower(element(s, i)));
+            append(lowered, chars.to_Lower(element(s, i)));
         end loop;
-        return lowered_str;
-    end To_Lower_Case;
+        return lowered;
+    end toLowerCase;
 
 
     function Ends_With(s: Unbounded_String; Suffix_To_Match: Unbounded_String) return Boolean is

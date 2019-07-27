@@ -27,19 +27,22 @@ var
     hasNextToken: Boolean;
 begin
     location := index(beingTokenized, separator);
-    if location > 0 then begin
+    if location > 0 then
+      begin
         hasNextToken := True;
         token := subStr(beingTokenized, 1, location - 1);
         beingTokenized := subStr(beingTokenized, location + length(separator));
-    end 
-    else if length(beingTokenized) > 0 then begin
+      end 
+    else if length(beingTokenized) > 0 then
+      begin
         hasNextToken := true;
         token := beingTokenized;
         beingTokenized := '';
-    end 
-    else begin
+      end 
+    else
+      begin
         hasNextToken := false;
-    end;
+      end;
     nextToken := hasNextToken;  (* Return whether there is another token *)
 end;
 
