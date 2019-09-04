@@ -83,6 +83,7 @@ public class ShellEnvironment extends HashMap<String,String> implements Environm
         if (javaSpecVersion.compareTo(new BigDecimal(1.0)) > 0 && javaSpecVersion.compareTo(new BigDecimal(1.5)) < 0) {
             // These versions don't have a built-in getenv function so 
             // use this custom JNI version.
+/*
             try {
                 // With a native executable compiled with gcj this
                 // method will already be compiled in. Otherwise
@@ -95,14 +96,17 @@ public class ShellEnvironment extends HashMap<String,String> implements Environm
                     value = Posix.getenv(name);
                 }
                 catch (Exception exc) {
+*/
                     // If we can't load the JNI library, call the shell.
                     ArrayList<String> output = captureCommandOutput(buildGetEnvCommand(name));
                     if (output.size() > 0) {
                         value = output.get(0);
                     }
                 }
+/*
             }
         }
+*/
         else {
             value = System.getenv(name);
         }

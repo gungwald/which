@@ -51,10 +51,7 @@ public class Which {
     
     public Which() throws IOException, EnvironmentVariableNotFoundException {
         String pathExt = System.getenv("PATHEXT");
-        if (pathExt == null) {
-            pathExts = new String[0];
-        }
-        else {
+        if (pathExt != null) {
         	pathExts = pathExt.split(PATH_SEPARATOR);
         }
         
@@ -125,7 +122,7 @@ public class Which {
             }
             else {
                 for (File location : find(arg)) {
-                    System.out.println(location.getCanonicalPath());
+                    System.out.println(location.getAbsolutePath());
                 }
             }
         }
@@ -163,10 +160,9 @@ public class Which {
                 break;
             }
             File dir = new File(dirName);
-            if (verbose) {
-                System.out.println("   Looking in directory: " + dir.getAbsolutePath());
-            }
+            if (verbose) System.out.printf("   Looking in directory: %s%n", dir.getAbsolutePath());
             if (isSubstringSearchRequested()) {
+	            if (verbose) System.out.println("Doing substring search");
                 File[] dirContents = dir.listFiles();
                 for (File f : dirContents) {
                     if (f.getName().toLowerCase().contains(lowerCmd)) {
@@ -175,8 +171,10 @@ public class Which {
                 }
             }
             else {
+	            if (verbose) System.out.println("Doing exact match");
                 if (pathExts == null) {
                 	File file = new File(dir, cmd);
+                	if (verbose) System.out.printf("Checking file: %s%n", file.getAbsolutePath());
                 	if (file.exists()) {
                 		matches.add(file);
                 	}

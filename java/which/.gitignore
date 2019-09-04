@@ -21,3 +21,4 @@ gradle-app.setting
 
 # Vim files
 *.swp
+/classes
