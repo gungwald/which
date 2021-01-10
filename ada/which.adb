@@ -24,7 +24,12 @@ procedure which is
     package args  renames Ada.Command_Line;
     package os    renames GNAT.OS_Lib;
     package ustr  renames Ada.Strings.Unbounded;
-    package ustr_vect is new Ada.Containers.Vectors(element_type => ustr.Unbounded_String, index_type => Natural, "=" => ustr."=");
+    package ustr_vect 
+                  is new  Ada.Containers.Vectors(
+                    element_type => ustr.Unbounded_String, 
+                    index_type => Natural, 
+                    "=" => ustr."=");
+
 
     find_all         : Boolean := False;
     verbose          : Boolean := False;
@@ -33,18 +38,19 @@ procedure which is
     exts             : ustr_vect.Vector;
     path_sep         : ustr.Unbounded_String;
 
-    function getenv(name: in String) return Unbounded_String is
-        envVarNotFound : exception;
+
+    function Get_Environment_Variable(name: in String) return Unbounded_String is
+        Env_Var_Not_Found : exception;
         e : Exception_Occurrence;
     begin
         return to_Unbounded_String(env.value(name));
     exception
         when e : others =>
-            raise envVarNotFound with exception_Message(e) & ": " & name;
-    end getenv;
+            raise Env_Var_Not_Found with Exception_Message(e) & ": " & name;
+    end Get_Environment_Variable;
 
 
-    function toLowerCase(s : Unbounded_String) return Unbounded_String is
+    function To_Lower_Case(s : Unbounded_String) return Unbounded_String is
         lowered : Unbounded_String;
     begin
         lowered := to_Unbounded_String("");
@@ -52,21 +58,20 @@ procedure which is
             append(lowered, chars.to_Lower(element(s, i)));
         end loop;
         return lowered;
-    end toLowerCase;
+    end To_Lower_Case;
 
 
     function Ends_With(s: Unbounded_String; Suffix_To_Match: Unbounded_String) return Boolean is
 	Ends_With: Boolean;
 	Length_Of_Suffix_To_Match: Natural;
-	End_Of_S: Unbounded_String;
     begin
 	Length_Of_Suffix_To_Match := Length(Suffix_To_Match);
-	End_Of_S := 
         if To_Lower_Case(Tail(s, Length(Suffix_To_Match))) = To_Lower_Case(Suffix_To_Match) then
 	    Ends_With := true;
 	else
 	    Ends_With := false;
         end if;
+        return Ends_With;
     end Ends_With;
 
 
@@ -92,7 +97,8 @@ procedure which is
     begin
         if ustr_vect.Is_Empty(Exts) then
             -- UNIX has no PATHEXT environment variable so Exts will be empty.
-            Is_Executable := Os.Is_Executable_File(dirs.Full_Name(File)); 
+            -- Is_Executable := Os.Is_Executable_File(dirs.Full_Name(File)); 
+            Is_Executable := True;
 	else
             -- On Windows the PATHEXT variable is needed.
             ustr_vect.Iterate(Exts, Compare_File_Extension_To'Access);
