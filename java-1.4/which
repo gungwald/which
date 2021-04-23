@@ -1,12 +1,14 @@
 #!/bin/sh
 
-BIN_DIR=$(dirname "$0")
-if [ "$BIN_DIR" = "." ]
-then
-	BIN_DIR=$(pwd)
-fi
+# The non-nested backtick syntax is the only way this works in the old
+# /bin/sh on Solaris 8.
+getAbsoluteDir()
+{
+    ( cd `dirname "$1"` ; pwd )
+}
 
-TOP_DIR=$(dirname "$BIN_DIR")
+BIN_DIR=`getAbsoluteDir "$0"`
+TOP_DIR=`dirname "$BIN_DIR"`
 CLS_DIR="$TOP_DIR"/share/java
 
 java -Denv.PATH="$PATH" -classpath "$CLS_DIR" Which "$@"
