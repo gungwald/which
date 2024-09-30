@@ -18,3 +18,5 @@ hs_err_pid*
 *.gch
 Debug/
 Release/
+
+ada/obj/
