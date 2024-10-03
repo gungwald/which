@@ -4,13 +4,16 @@ project Which is
    for Object_Dir use "obj";
    for Exec_Dir use ".";
    for Main use ("which.adb"); --   <<<<
+   for Runtime ("ada") use "default";
 
    package Builder is
-      for Executable ("which.adb") use "which-ada";
+      for Executable ("which.adb") use "which";
       for Global_Compilation_Switches ("ada") use ("-O2", "-g");
    end Builder;
 
-   for Runtime ("ada") use "default";
+   package Compiler is
+      for Switches ("ada") use ("-gnatf");
+   end Compiler;
 
 end Which;
 
