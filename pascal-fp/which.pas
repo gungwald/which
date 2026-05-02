@@ -46,36 +46,40 @@ end;
 (**
  * Split a String into parts and put the parts into a Vector.
  *)
-function split(splittethMe: String; thySplittor: Char; var splitten: Vector): Integer;
-var
-    count: Integer;
-    part: String(10);
-begin
-    count := 0;
-    while nextToken(splittethMe, ';', part) do begin
-        splitten[count] := part;
-        count := count + 1;
-    end;
-    split := count;  (* Return how many parts it was split into *)
-end;
+FUNCTION split(txt:String; delim:Char; var parts:Vector)
+    : Integer;
+VAR
+  count:Integer;
+  part:String(256);
+BEGIN
+  count := 0;
+  WHILE nextToken(txt, ';', part) DO 
+    BEGIN
+      parts[count] := part;
+      count := count + 1;
+    END;
+  split := count;(* Return how many parts it was split into *)
+END;
 
 procedure correctFileNameCase(var absFileName: String);
 var
-    parentDirectoryName: String(1024);
-    parentDirectory: DirPtr;
-    shortFileName: String(256);
-    someFile: String(256);
-    done: Boolean;
+  parentDirectoryName: String(1024);
+  parentDirectory: DirPtr;
+  shortFileName: String(256);
+  someFile: String(256);
+  done: Boolean;
 begin
-    shortFileName := nameFromPath(absFileName) + extFromPath(absFileName);
-    parentDirectoryName := dirFromPath(absFileName);
-    parentDirectory := openDir(parentDirectoryName);
-    done := false;
-    while not done do begin
-        someFile := readDir(parentDirectory);
-        if strEqualCase(someFile, shortFileName) then begin
-            done := true;
-            absFileName := parentDirectoryName + someFile;
+  shortFileName := nameFromPath(absFileName) + extFromPath(absFileName);
+  parentDirectoryName := dirFromPath(absFileName);
+  parentDirectory := openDir(parentDirectoryName);
+  done := false;
+  while not done do 
+    begin
+      someFile := readDir(parentDirectory);
+      if strEqualCase(someFile, shortFileName) then
+        begin
+          done := true;
+          absFileName := parentDirectoryName + someFile;
         end;
     end;
 end;
@@ -100,23 +104,29 @@ end;
 
 (* Main Program *)
 begin
-    if paramCount <> 1 then begin
-        writeln('usage: which <program_name>');
-        halt(0);
+  if paramCount <> 1 then 
+    begin
+      writeln('usage: which <program_name>');
+      halt(0);
     end;
-    programToFind := paramStr(1);
 
-    pathExt := getenv('PATHEXT');
-    extensionCount := split(pathExt, ';', extensions);
+  programToFind := paramStr(1);
 
-    path := getenv('PATH');
-    while nextToken(path, ';', directory) do begin
-        for i := 0 to extensionCount - 1 do begin
-            someFile := directory + '\' + programToFind + extensions[i];
-            if isExecutable(someFile) then begin
-                writeln(someFile);
-            end;
-        end;
-    end;
+  pathExt := getenv('PATHEXT');
+  extensionCount := split(pathExt, ';', extensions);
+
+  path := getenv('PATH');
+
+  while NextToken(path, ';', directory) DO 
+  begin
+    for i := 0 to extensionCount - 1 DO 
+    begin
+      someFile := directory + '\' + programToFind + extensions[i];
+      if isExecutable(someFile) THEN
+      begin
+        writeln(someFile)
+      end
+    end
+  end
 end.
 

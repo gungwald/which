@@ -14,6 +14,7 @@ with Ada.Strings.Unbounded.Text_IO;
 
 use Ada.Text_IO;        -- Put_Line, Standard_Error
 use Ada.Directories;    -- Necessary to get the = operator
+use Ada.Strings.Fixed;  -- Index
 
 procedure Which is
    package Exc renames Ada.Exceptions;
@@ -58,12 +59,17 @@ procedure Which is
       return Lower_Cased_S;
    end To_Lower_Case;
 
-   function Ends_With (Source, Pattern : String) return Boolean is
+   function Ends_With(S, Ending : String) return Boolean is
+      First_Char : Positive;
+      Result : Boolean;
    begin
-      return
-        Pattern'Length <= Source'Length
-        and then Source (Source'Last - Pattern'Length + 1 .. Source'Last) =
-        Pattern;
+      if S'Length >= Ending'Length then -- Avoid negative index
+         First_Char := S'Last - Ending'Length + 1;
+         Result := S(First_Char..S'Last) = Ending;
+      else
+         Result := False;
+      end if;
+      return Result;
    end Ends_With;
 
    function Is_Executable (File : Dirs.Directory_Entry_Type) return Boolean is
@@ -73,7 +79,7 @@ procedure Which is
 
       procedure Compare_File_Extension_To (Exts_Cursor : StrVect.Cursor) is
       begin
-         if Ends_With (Dirs.Simple_Name (File), StrVect.Element (Exts_Cursor))
+         if Ends_With(Dirs.Simple_Name(File), StrVect.Element(Exts_Cursor))
          then
             Extension_Matches := True;
          end if;
@@ -93,31 +99,26 @@ procedure Which is
    end Is_Executable;
 
    procedure Split
-     (Split_Into_This_Vector :    out StrVect.Vector;
-      Delimiter_To_Find      : in     String;
-      Text_To_Split          : in     String)
+     (Txt   : in  String;
+      Delim : in  String;
+      Parts : out StrVect.Vector)
    is
-      Delimiter_Position_Found : Natural;
-      Search_From_Position : Positive := Positive'First;
-      Unb_Text_To_Split : UnbStr.Unbounded_String := UnbStr.To_Unbounded_String(Text_To_Split);
+      Delim_Idx : Natural;
+      Start_Idx : Positive := Positive'First;
+      Part      : String;
    begin
-      Split_Into_This_Vector := StrVect.Empty_Vector;
-      Delimiter_Position_Found := FxdStr.Index(Text_To_Split, Delimiter_To_Find, Search_From_Position);
-      while Delimiter_Position_Found > 0 loop
-         declare
-            Separated_Value : String := UnbStr.Slice(Unb_Text_To_Split, Search_From_Position, Delimiter_Position_Found - 1);
-         begin
-            StrVect.Append(Split_Into_This_Vector, Separated_Value);
-         end;
-         Search_From_Position := Delimiter_Position_Found + Delimiter_To_Find'Length;
-         Delimiter_Position_Found := FxdStr.Index(Text_To_Split, Delimiter_To_Find, Search_From_Position);
+      Parts := StrVect.Empty_Vector;
+      Delim_Idx := Index(Txt, Delim, Start_Idx);
+      while Delim_Idx > 0 loop
+         Part := Txt(Start_Idx..Delim_Idx - 1);
+         StrVect.Append(Parts, Part);
+         Start_Idx := Delim_Idx + Delim'Length;
+         Delim_Idx := Index(Txt, Delim, Start_Idx);
       end loop;
-      if Search_From_Position <= Text_To_Split'Length then
-         declare
-            Separated_Value : String := UnbStr.Slice(Unb_Text_To_Split, Search_From_Position, Text_To_Split'Length);
-         begin
-            StrVect.Append(Split_Into_This_Vector, Separated_Value);
-         end;
+      -- Get remainder part.
+      if Start_Idx <= Txt'Length then
+         Part := Txt(Start_Idx..Txt'Length);
+         StrVect.Append(Parts, Part);
       end if;
    end Split;
 

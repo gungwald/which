@@ -1,7 +1,7 @@
 # Project: which
 
 BIN = which
-CC = gcc
+#CC = gcc
 WINDRES = windres
 RES = 
 LINKOBJ = which.o errors.o stringconcat.o $(RES)
